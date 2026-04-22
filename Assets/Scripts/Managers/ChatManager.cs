@@ -16,7 +16,7 @@ public class ChatManager : Singleton<ChatManager> {
     private MessageBubble _botMessagePrefab, _userMessagePrefab;
 
     [SerializeField]
-    private GameObject _microButton, _sendButton, _menuNotificationIcon;
+    private GameObject _microButton, _sendButton, _menuNotificationIcon, _loadingIconPrefab;
     
     [SerializeField]
     private ScrollRect _messagesScrollRect;
@@ -32,12 +32,17 @@ public class ChatManager : Singleton<ChatManager> {
     private TaskDto _jsonResult;
     private string _botReply;
     private bool _isChatOpened;
+    private GameObject _loadingIcon;
 
     public void SendMessage() {
         AiManager.Instance.SendMessage(_messageField.text, HandleReply, EndReply);
         
         MessageBubble message = Instantiate(_userMessagePrefab, _messagesContainer);
         message.Init(_messageField.text);
+
+        if (_loadingIcon == null) {
+            _loadingIcon = Instantiate(_loadingIconPrefab, _messagesContainer);
+        }
 
         _messageField.text = string.Empty;
     }
@@ -69,11 +74,13 @@ public class ChatManager : Singleton<ChatManager> {
     }
     
     private void OnOpenChat() {
-        _menuNotificationIcon.SetActive(false);
         StartCoroutine(RebuildMessagesCoroutine());
     }
 
     private void EndReply() {
+        Destroy(_loadingIcon);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_messagesContainer as RectTransform);
+        
         int jsonPos = _botReply.IndexOf("```", StringComparison.InvariantCulture);
         MessageBubble message = Instantiate(_botMessagePrefab, _messagesContainer);
 
