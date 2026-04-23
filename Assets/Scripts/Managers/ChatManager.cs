@@ -35,10 +35,10 @@ public class ChatManager : Singleton<ChatManager> {
     private GameObject _loadingIcon;
 
     public void SendMessage() {
-        AiManager.Instance.SendMessage(_messageField.text, HandleReply, EndReply);
-        
         MessageBubble message = Instantiate(_userMessagePrefab, _messagesContainer);
         message.Init(_messageField.text);
+        
+        AiManager.Instance.SendMessage(_messageField.text, HandleReply, EndReply);
 
         if (_loadingIcon == null) {
             _loadingIcon = Instantiate(_loadingIconPrefab, _messagesContainer);
