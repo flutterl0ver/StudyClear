@@ -15,8 +15,5 @@ public class TasksManager : Singleton<TasksManager> {
         TaskObject newTask = Instantiate(_taskPrefab, _tasksContainer);
         
         newTask.Init(taskData);
-        
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_tasksContainer as RectTransform);
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_rebuildingLayout);
     }
 }

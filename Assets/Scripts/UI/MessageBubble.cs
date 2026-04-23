@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 public class MessageBubble : MonoBehaviour {
     [SerializeField]
-    private TextMeshProUGUI _firstText, _secondText, _taskName, _taskDeadline;
+    private TextMeshProUGUI _firstText, _secondText, _taskSubject, _taskName, _taskDeadline;
 
     [SerializeField]
     private GameObject _createdTask;
@@ -26,8 +27,9 @@ public class MessageBubble : MonoBehaviour {
         if (createdTask != null) {
             _createdTask.SetActive(true);
 
+            _taskSubject.text = createdTask.Subject;
             _taskName.text = createdTask.Title;
-            _taskDeadline.text = createdTask.Deadline.ToString();
+            _taskDeadline.text = createdTask.Deadline.ToString(CultureInfo.InvariantCulture);
         }
         
         LayoutRebuilder.ForceRebuildLayoutImmediate(transform as RectTransform);

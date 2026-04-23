@@ -44,6 +44,32 @@ class Program {
                         output.Write(buffer, 0, buffer.Length);
                     }
                 }
+                
+                if (context.Request.Url.AbsolutePath.StartsWith("/login")) {
+                    Dictionary<string, JsonElement> body = ParseBody(context.Request.InputStream);
+                    string error = string.Empty;
+                    User? foundUser = null;
+
+                    string username = body["username"].GetString();
+                    string password = body["password"].GetString();
+
+                    if (UsersProvider.UserExists(username)) {
+                        foundUser = UsersProvider.GetUserByUsername(username);
+                        if (!BCrypt.Net.BCrypt.Verify(password, foundUser.Password)) {
+                            foundUser = null;
+                            error = "LoginFailed";
+                        }
+                    } else {
+                        error = "LoginFailed";
+                    }
+
+                    string response = JsonSerializer.Serialize(new { error = error, user = foundUser });
+
+                    byte[] buffer = Encoding.UTF8.GetBytes(response);
+                    using (Stream output = context.Response.OutputStream) {
+                        output.Write(buffer, 0, buffer.Length);
+                    }
+                }
             } catch (Exception e) {
                 Console.Error.WriteLine(e);
             }

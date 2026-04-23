@@ -15,6 +15,7 @@ public class AiManager : Singleton<AiManager> {
         text = $"[{DateTime.Now}] {text}";
         
         _ = _llmAgent.Chat(text, handleReply, onEnd);
+        // Send(text, handleReply, onEnd);
     }
 
     private void Send(string text, Action<string> handleReply, [CanBeNull] Action onEnd = null) {
