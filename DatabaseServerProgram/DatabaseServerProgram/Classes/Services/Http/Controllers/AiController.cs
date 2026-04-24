@@ -15,11 +15,14 @@ public class AiController : IHttpController {
         string prompt = request.RequestBody["prompt"];
         string systemPrompt = request.RequestBody.GetValueOrDefault("systemPrompt", string.Empty);
         
+        string readyPrompt = systemPrompt + '\n' + prompt;
+        Console.WriteLine(readyPrompt);
+        
         HttpClient client = new();
         HttpResponseMessage response = client.PostAsync("http://localhost:11434/api/generate", 
             new StringContent(JsonSerializer.Serialize(new {
                 model = MODEL,
-                prompt = systemPrompt + '\n' + prompt,
+                prompt = readyPrompt,
                 stream = false
             }))).Result;
         

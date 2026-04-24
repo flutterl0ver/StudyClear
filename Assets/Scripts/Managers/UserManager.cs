@@ -105,7 +105,10 @@ public class UserManager : Singleton<UserManager> {
         _loginPasswordInput.text = string.Empty;
 
         foreach (TextMeshProUGUI text in _nameTexts) {
-            text.text = text.text.Replace("{name}", User.Name).Replace("{surname}", User.Surname);
+            text.text = text.text
+                .Replace("{name}", User.Name)
+                .Replace("{surname}", User.Surname)
+                .Replace("{username}", User.Username);
         }
     }
 
