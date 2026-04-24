@@ -14,7 +14,7 @@ public class TasksManager : Singleton<TasksManager> {
     private RectTransform _rebuildingLayout;
 
     [SerializeField]
-    private GameObject _notificationIcon;
+    private GameObject _notificationIcon, _noExpiredImage;
 
     [SerializeField]
     private TextMeshProUGUI _activeText, _lowTimeText, _expiredText;
@@ -25,6 +25,10 @@ public class TasksManager : Singleton<TasksManager> {
         foreach (TaskDto task in tasks) {
             CreateTask(task, false);
         }
+    }
+
+    public void CheckExpired() {
+        _noExpiredImage.SetActive(_expiredCount == 0);
     }
 
     public void CreateTask(TaskDto taskData, bool save = true) {
@@ -44,6 +48,7 @@ public class TasksManager : Singleton<TasksManager> {
         } else {
             _activeText.text = (++_activeCount).ToString();
         }
+
         MainScreen.Instance.UpdateProgress(0, _lowTimeCount, _expiredCount, _activeCount);
 
         TaskObject newTask = Instantiate(_taskPrefab, taskContainer);
