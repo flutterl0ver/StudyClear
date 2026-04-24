@@ -17,7 +17,7 @@ public class ChatManager : Singleton<ChatManager> {
 
     [SerializeField]
     private GameObject _microButton, _sendButton, _menuNotificationIcon, _loadingIconPrefab;
-    
+
     [SerializeField]
     private ScrollRect _messagesScrollRect;
 
@@ -28,16 +28,16 @@ public class ChatManager : Singleton<ChatManager> {
             if (value) OnOpenChat();
         }
     }
-    
+
     private TaskDto _jsonResult;
     private string _botReply;
     private bool _isChatOpened;
     private GameObject _loadingIcon;
-
+    
     public void SendMessage() {
         MessageBubble message = Instantiate(_userMessagePrefab, _messagesContainer);
         message.Init(_messageField.text);
-        
+
         AiManager.Instance.SendMessage(_messageField.text, HandleReply, EndReply);
 
         if (_loadingIcon == null) {
@@ -49,7 +49,7 @@ public class ChatManager : Singleton<ChatManager> {
 
     public void InputText(string text) {
         bool empty = text == string.Empty;
-        
+
         _microButton.SetActive(empty);
         _sendButton.SetActive(!empty);
     }
@@ -61,7 +61,7 @@ public class ChatManager : Singleton<ChatManager> {
     public void ShowNotificationIcon() {
         _menuNotificationIcon.SetActive(true);
     }
-    
+
     private void HandleReply(string reply) {
         _botReply = reply;
     }
@@ -69,18 +69,19 @@ public class ChatManager : Singleton<ChatManager> {
     private IEnumerator RebuildMessagesCoroutine() {
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
-        
+
         LayoutRebuilder.ForceRebuildLayoutImmediate(_messagesContainer as RectTransform);
     }
-    
+
     private void OnOpenChat() {
         StartCoroutine(RebuildMessagesCoroutine());
     }
 
     private void EndReply() {
         Destroy(_loadingIcon);
+
         LayoutRebuilder.ForceRebuildLayoutImmediate(_messagesContainer as RectTransform);
-        
+
         int jsonPos = _botReply.IndexOf("```", StringComparison.InvariantCulture);
         MessageBubble message = Instantiate(_botMessagePrefab, _messagesContainer);
 
@@ -108,7 +109,7 @@ public class ChatManager : Singleton<ChatManager> {
             Debug.LogException(e);
             message.Init("Извините, что-то пошло не так.");
         }
-        
+
         _jsonResult = null;
         _botReply = string.Empty;
     }

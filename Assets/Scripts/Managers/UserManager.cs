@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Text.Json;
 using TMPro;
 using UnityEngine;
@@ -20,11 +18,12 @@ public class UserManager : Singleton<UserManager> {
 
     public UserDto User;
 
-    private string _databaseHost = "http://localhost:8080";
-
     private void Start() {
+        _studentMenu.SetActive(false);
+        _registerMenu.SetActive(true);
+        
         User = JsonSerializer.Deserialize<UserDto>(PlayerPrefs.GetString("User"));
-
+        
         UserDto user;
         if (User == null) user = null;
         else user = TryLogin(User.Username, User.Password);
@@ -39,27 +38,28 @@ public class UserManager : Singleton<UserManager> {
     }
 
     public void Register() {
-        string registerData = JsonSerializer.Serialize(new {
+        string password = _regPasswordInput.text;
+        
+        object registerData = new {
             username = _regUsernameInput.text,
-            password = BCrypt.Net.BCrypt.HashPassword(_regPasswordInput.text),
+            password = BCrypt.Net.BCrypt.HashPassword(password),
             name = _regNameInput.text,
             surname = _regSurnameInput.text
-        });
+        };
 
-        HttpClient client = new();
-        HttpResponseMessage response = client.PostAsync(_databaseHost + "/register", new StringContent(registerData)).Result;
-        string responseText = response.Content.ReadAsStringAsync().Result;
+        string responseText = HttpService.SendPostRequest("register", registerData);
         Dictionary<string, JsonElement> responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText);
 
         if (responseData["error"].GetString() != string.Empty) { } else {
             User = JsonSerializer.Deserialize<UserDto>(responseData["user"].GetRawText());
-
+            User.Password = password;
+            
             OpenStudent();
         }
     }
 
     public void Login() {
-        UserDto user = TryLogin(User.Username, User.Password);
+        UserDto user = TryLogin(_loginUsernameInput.text, _loginPasswordInput.text);
 
         if (user == null) { } else {
             User = user;
@@ -68,25 +68,31 @@ public class UserManager : Singleton<UserManager> {
     }
 
     private UserDto TryLogin(string username, string password) {
-        // string loginData = JsonSerializer.Serialize(new { username = _loginUsernameInput.text, password = _loginPasswordInput.text; });
-        //
-        // HttpClient client = new();
-        // HttpResponseMessage response = client.PostAsync(_databaseHost + "/login", new StringContent(registerData)).Result;
-        // string responseText = response.Content.ReadAsStringAsync().Result;
-        // Dictionary<string, JsonElement> responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText);
-        //
-        // if (responseData["error"].GetString() != string.Empty) { } else {
-        //     User = JsonSerializer.Deserialize<UserDto>(responseData["user"].GetRawText());
-        //
-        //     OpenStudent();
-        // }
+        object loginData = new {
+            username,
+            password
+        };
+        
+        string responseText = HttpService.SendPostRequest("login", loginData);
+        Dictionary<string, JsonElement> responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseText);
 
-        return null;
+        if (responseData["error"].GetString() != string.Empty) {
+            return null;
+        }
+        
+        UserDto user = JsonSerializer.Deserialize<UserDto>(responseData["user"].GetRawText());
+        user.Password = password;
+        return user;
     }
 
     private void OpenStudent() {
         PlayerPrefs.SetString("User", JsonSerializer.Serialize(User));
 
+        string tasksResponse = HttpService.SendGetRequest($"{User.Username}/tasks");
+        List<TaskDto> tasks = JsonSerializer.Deserialize<List<TaskDto>>(tasksResponse);
+        
+        TasksManager.Instance.LoadTasks(tasks);
+        
         _registerMenu.SetActive(false);
         _studentMenu.SetActive(true);
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Proga\\Unity\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj": {}
+    "E:\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj": {}
   },
   "projects": {
-    "C:\\Proga\\Unity\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj": {
+    "E:\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Proga\\Unity\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj",
+        "projectUniqueName": "E:\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj",
         "projectName": "DatabaseServerProgram",
-        "projectPath": "C:\\Proga\\Unity\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj",
+        "projectPath": "E:\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\DatabaseServerProgram.csproj",
         "packagesPath": "C:\\Users\\fluttershY_\\.nuget\\packages\\",
-        "outputPath": "C:\\Proga\\Unity\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\obj\\",
+        "outputPath": "E:\\StudyClear\\DatabaseServerProgram\\DatabaseServerProgram\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -61,12 +61,6 @@
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[9.0.15, )"
-            },
-            "Microsoft.EntityFrameworkCore.Tools": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[10.0.7, )"
             }
           },
           "imports": [
@@ -85,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,19 +1,53 @@
+using System.Collections.Generic;
+using System.Text.Json;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class TasksManager : Singleton<TasksManager> {
     [SerializeField]
     private TaskObject _taskPrefab;
 
     [SerializeField]
-    private Transform _tasksContainer;
-    
+    private Transform _activeTasksContainer, _expiredTasksContainer, _checkingTasksContainer;
+
     [SerializeField]
     private RectTransform _rebuildingLayout;
 
-    public void CreateTask(TaskDto taskData) {
-        TaskObject newTask = Instantiate(_taskPrefab, _tasksContainer);
-        
+    [SerializeField]
+    private GameObject _notificationIcon;
+
+    [SerializeField]
+    private TextMeshProUGUI _activeText, _lowTimeText, _expiredText;
+
+    private int _activeCount, _lowTimeCount, _expiredCount;
+
+    public void LoadTasks(List<TaskDto> tasks) {
+        foreach (TaskDto task in tasks) {
+            CreateTask(task, false);
+        }
+    }
+
+    public void CreateTask(TaskDto taskData, bool save = true) {
+        taskData.User = UserManager.Instance.User.Username;
+        if (save) {
+            taskData = JsonSerializer.Deserialize<TaskDto>(HttpService.SendPostRequest("create-task", taskData));
+            _notificationIcon.SetActive(true);
+        }
+
+        Transform taskContainer = _activeTasksContainer;
+        if (taskData.IsExpired) {
+            _expiredText.text = (++_expiredCount).ToString();
+
+            taskContainer = _expiredTasksContainer;
+        } else if (taskData.IsLowTime) {
+            _lowTimeText.text = (++_lowTimeCount).ToString();
+        } else {
+            _activeText.text = (++_activeCount).ToString();
+        }
+        MainScreen.Instance.UpdateProgress(0, _lowTimeCount, _expiredCount, _activeCount);
+
+        TaskObject newTask = Instantiate(_taskPrefab, taskContainer);
+
         newTask.Init(taskData);
     }
 }
