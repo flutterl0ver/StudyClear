@@ -1,4 +1,6 @@
+using System.Text.Json;
 using DatabaseServerProgram.Classes.Providers;
+using DatabaseServerProgram.Database.Entities;
 using DatabaseServerProgram.DTO;
 using DatabaseServerProgram.Interfaces;
 
@@ -20,8 +22,9 @@ public class TaskController : IHttpController {
         string subject = request.RequestBody["Subject"];
         DateTime deadline = DateTime.Parse(request.RequestBody["Deadline"]);
         string username = request.RequestBody["User"];
+        List<Subtask> subtasks = JsonSerializer.Deserialize<List<Subtask>>(request.RequestBody["Subtasks"]) ?? new();
 
-        Database.Entities.Task task = new(title, subject, deadline, username);
+        Database.Entities.Task task = new(title, subject, deadline, username, subtasks);
         
         TasksProvider.AddTask(task);
 

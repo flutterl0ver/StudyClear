@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UserManager : Singleton<UserManager> {
     [SerializeField]
@@ -9,14 +10,18 @@ public class UserManager : Singleton<UserManager> {
 
     [SerializeField]
     private TMP_InputField _loginUsernameInput, _loginPasswordInput;
+    
+    [SerializeField]
+    private GameObject _studentMenu, _registerMenu, _parentMenu, _teacherMenu, _emptyChildrenText, _emptyStudentsText;
+    
+    [SerializeField]
+    private RectTransform _childrenContainer, _studentsContainer;
 
     [SerializeField]
-    private GameObject _studentMenu, _registerMenu;
-
-    [SerializeField]
-    private TextMeshProUGUI[] _nameTexts;
+    private ChildObject _childPrefab, _studentPrefab;
 
     public UserDto User;
+    public int RegisterAccountType { get; set; }
 
     private void Start() {
         _studentMenu.SetActive(false);
@@ -33,7 +38,7 @@ public class UserManager : Singleton<UserManager> {
             PlayerPrefs.DeleteKey("User");
         } else {
             User = user;
-            OpenStudent();
+            OpenMainScreen();
         }
     }
 
@@ -44,7 +49,8 @@ public class UserManager : Singleton<UserManager> {
             username = _regUsernameInput.text,
             password = BCrypt.Net.BCrypt.HashPassword(password),
             name = _regNameInput.text,
-            surname = _regSurnameInput.text
+            surname = _regSurnameInput.text,
+            accountType = RegisterAccountType
         };
 
         string responseText = HttpService.SendPostRequest("register", registerData);
@@ -54,7 +60,7 @@ public class UserManager : Singleton<UserManager> {
             User = JsonSerializer.Deserialize<UserDto>(responseData["user"].GetRawText());
             User.Password = password;
             
-            OpenStudent();
+            OpenMainScreen();
         }
     }
 
@@ -63,7 +69,7 @@ public class UserManager : Singleton<UserManager> {
 
         if (user == null) { } else {
             User = user;
-            OpenStudent();
+            OpenMainScreen();
         }
     }
 
@@ -85,16 +91,10 @@ public class UserManager : Singleton<UserManager> {
         return user;
     }
 
-    private void OpenStudent() {
+    private void OpenMainScreen() {
         PlayerPrefs.SetString("User", JsonSerializer.Serialize(User));
-
-        string tasksResponse = HttpService.SendGetRequest($"{User.Username}/tasks");
-        List<TaskDto> tasks = JsonSerializer.Deserialize<List<TaskDto>>(tasksResponse);
-        
-        TasksManager.Instance.LoadTasks(tasks);
         
         _registerMenu.SetActive(false);
-        _studentMenu.SetActive(true);
 
         _regUsernameInput.text = string.Empty;
         _regPasswordInput.text = string.Empty;
@@ -104,12 +104,85 @@ public class UserManager : Singleton<UserManager> {
         _loginUsernameInput.text = string.Empty;
         _loginPasswordInput.text = string.Empty;
 
-        foreach (TextMeshProUGUI text in _nameTexts) {
-            text.text = text.text
-                .Replace("{name}", User.Name)
-                .Replace("{surname}", User.Surname)
-                .Replace("{username}", User.Username);
+        switch (User.AccountType) {
+            case 0: OpenStudent(); break;
+            case 1: OpenParent(); break;
+            case 2: OpenTeacher(); break;
         }
+    }
+    
+    private void OpenStudent() {
+        _studentMenu.SetActive(true);
+        
+        string tasksResponse = HttpService.SendGetRequest($"{User.Username}/tasks");
+        List<TaskDto> tasks = JsonSerializer.Deserialize<List<TaskDto>>(tasksResponse);
+        
+        TasksManager.Instance.LoadTasks(tasks);
+    }
+
+    private void OpenParent() {
+        _parentMenu.SetActive(true);
+        
+        string childrenResponse = HttpService.SendGetRequest($"{User.Username}/children");
+        Dictionary<string, JsonElement> responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(childrenResponse);
+
+        foreach (RectTransform child in _childrenContainer) {
+            if (child == _emptyChildrenText.transform) continue;
+            
+            Destroy(child.gameObject);
+        }
+        
+        if (responseData["error"].GetString() != string.Empty) { } else {
+            List<UserDto> children = JsonSerializer.Deserialize<List<UserDto>>(responseData["users"].GetRawText());
+            _emptyChildrenText.SetActive(children.Count == 0);
+            
+            foreach (UserDto child in children) {
+                ChildObject newChild = Instantiate(_childPrefab, _childrenContainer);
+
+                newChild.Init(child);
+            }
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_childrenContainer);
+        }
+    }
+
+    private void OpenTeacher() {
+        _teacherMenu.SetActive(true);
+        
+        string studentsResponse = HttpService.SendGetRequest($"{User.Username}/children");
+        Dictionary<string, JsonElement> responseData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(studentsResponse);
+
+        foreach (RectTransform student in _studentsContainer) {
+            if (student == _emptyStudentsText.transform) continue;
+            
+            Destroy(student.gameObject);
+        }
+        
+        if (responseData["error"].GetString() != string.Empty) { } else {
+            List<UserDto> students = JsonSerializer.Deserialize<List<UserDto>>(responseData["users"].GetRawText());
+            _emptyStudentsText.SetActive(students.Count == 0);
+            
+            foreach (UserDto student in students) {
+                ChildObject newStudent = Instantiate(_studentPrefab, _studentsContainer);
+
+                newStudent.Init(student);
+            }
+            
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_studentsContainer);
+        }
+    }
+
+    public void ExitAccount() {
+        User = null;
+        PlayerPrefs.DeleteKey("User");
+        
+        _studentMenu.SetActive(false);
+        _parentMenu.SetActive(false);
+        _teacherMenu.SetActive(false);
+        
+        _registerMenu.SetActive(true);
+        
+        OpenLogin();
     }
 
     public void OpenRegister() {

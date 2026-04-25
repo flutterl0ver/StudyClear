@@ -1,5 +1,7 @@
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using UnityEngine;
 
 public static class QueryStringSerializer {
     public static string Serialize(object obj) {
@@ -13,8 +15,14 @@ public static class QueryStringSerializer {
         foreach (PropertyInfo property in properties) {
             if(!isFirst) result.Append("&");
             else isFirst = false;
+
+            string value;
+            if (property.PropertyType.IsClass && property.PropertyType != typeof(string)) {
+                value = JsonSerializer.Serialize(property.GetValue(obj), property.PropertyType);
+            }
+            else value = property.GetValue(obj)?.ToString();
             
-            result.Append($"{property.Name}={property.GetValue(obj)}");
+            result.Append($"{property.Name}={value}");
         }
 
         return result.ToString();

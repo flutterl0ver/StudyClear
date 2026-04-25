@@ -21,9 +21,26 @@ public class TasksManager : Singleton<TasksManager> {
 
     private int _activeCount, _lowTimeCount, _expiredCount;
 
-    public void LoadTasks(List<TaskDto> tasks) {
+    public void LoadTasks(List<TaskDto> tasks, bool generateTests = true) {
+        ClearTasks();
         foreach (TaskDto task in tasks) {
-            CreateTask(task, false);
+            CreateTask(task, false, generateTests);
+        }
+    }
+
+    public void ClearTasks() {
+        foreach (RectTransform child in _activeTasksContainer) {
+            Destroy(child.gameObject);
+        }
+        
+        foreach (RectTransform child in _checkingTasksContainer) {
+            Destroy(child.gameObject);
+        }
+        
+        foreach (RectTransform child in _expiredTasksContainer) {
+            if (child == _noExpiredImage.transform) continue;
+            
+            Destroy(child.gameObject);
         }
     }
 
@@ -31,11 +48,11 @@ public class TasksManager : Singleton<TasksManager> {
         _noExpiredImage.SetActive(_expiredCount == 0);
     }
 
-    public void CreateTask(TaskDto taskData, bool save = true) {
-        taskData.User = UserManager.Instance.User.Username;
+    public void CreateTask(TaskDto taskData, bool save = true, bool generateTest = true, UserDto user = null) {
+        taskData.User = (user ?? UserManager.Instance.User).Username;
         if (save) {
             taskData = JsonSerializer.Deserialize<TaskDto>(HttpService.SendPostRequest("create-task", taskData));
-            _notificationIcon.SetActive(true);
+            if(_notificationIcon != null) _notificationIcon.SetActive(true);
         }
 
         Transform taskContainer = _activeTasksContainer;
@@ -53,6 +70,6 @@ public class TasksManager : Singleton<TasksManager> {
 
         TaskObject newTask = Instantiate(_taskPrefab, taskContainer);
 
-        newTask.Init(taskData);
+        newTask.Init(taskData, generateTest);
     }
 }

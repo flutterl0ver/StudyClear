@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 [Serializable]
 public class UserDto {
@@ -7,4 +8,9 @@ public class UserDto {
     public string Password { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
+    [CanBeNull]
+    public UserDto Parent { get; set; }
+    [CanBeNull]
+    public UserDto Teacher { get; set; }
+    public short AccountType { get; set; }
 }

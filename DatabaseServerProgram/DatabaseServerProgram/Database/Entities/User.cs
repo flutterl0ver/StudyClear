@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace DatabaseServerProgram.Database.Entities;
 
 public class User {
@@ -6,13 +8,17 @@ public class User {
     public string Password { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
+    public User? Parent { get; set; }
+    public User? Teacher { get; set; }
+    public short AccountType { get; set; }
     
     public User() {}
 
-    public User(string username, string password, string name, string surname) {
+    public User(string username, string password, string name, string surname, short accountType) {
         Username = username;
         Password = password;
         Name = name;
         Surname = surname;
+        AccountType = accountType;
     }
 }
